@@ -1,0 +1,78 @@
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #e5ddd5; /* Fundo texturizado estilo WhatsApp */
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+    display: flex;
+    flex-direction: column;
+}
+
+.message-row {
+    display: flex;
+    margin-bottom: 12px;
+    max-width: 80%;
+}
+
+/* Alinha as mensagens recebidas (do paciente) à esquerda */
+.message-row.inbound {
+    justify-content: flex-start;
+    align-self: flex-start;
+}
+
+/* Alinha as mensagens enviadas (do bot) à direita */
+.message-row.outbound {
+    justify-content: flex-end;
+    align-self: flex-end;
+}
+
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 18px;
+    color: #333;
+    position: relative;
+}
+
+/* Estilo da bolha de mensagem do paciente */
+.message-row.inbound .message-bubble {
+    background-color: #ffffff;
+    border-top-left-radius: 4px;
+}
+
+/* Estilo da bolha de mensagem do bot */
+.message-row.outbound .message-bubble {
+    background-color: #dcf8c6;
+    border-top-right-radius: 4px;
+}
+
+.message-bubble p {
+    margin: 0;
+    padding: 0;
+    word-wrap: break-word; /* Garante que textos longos quebrem a linha */
+}
+
+.message-time {
+    display: block;
+    font-size: 0.75rem;
+    color: #999;
+    text-align: right;
+    margin-top: 5px;
+    margin-left: 10px; /* Espaço entre o texto e a hora */
+}
+
+.message-row.outbound .message-time {
+    color: #61934a;
+}
