@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient'; // Importa o cliente Supabase
+import ToggleSwitch from './ToggleSwitch';
 import './ChatView.css';
+import './ToggleSwitch.css';
 
 // Componente para uma única bolha de mensagem (nenhuma alteração aqui)
 const ChatMessage = ({ message }) => (
@@ -18,7 +20,27 @@ const ChatMessage = ({ message }) => (
 const ChatView = ({ patientPhone, clinicId }) => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isAiActive, setIsAiActive] = useState(false);
     const messagesEndRef = useRef(null);
+
+    const handleToggleAutomation = async () => {
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_API_URL}/api/v1/patients/${patientPhone}/toggle-automation`,
+                { method: 'PATCH' }
+            );
+            if (!response.ok) {
+                console.error('Erro ao alternar automação');
+                return;
+            }
+            const data = await response.json();
+            if (typeof data.is_ai_active === 'boolean') {
+                setIsAiActive(data.is_ai_active);
+            }
+        } catch (err) {
+            console.error('Erro ao enviar requisição:', err);
+        }
+    };
 
     // Efeito para rolar para a última mensagem
     useEffect(() => {
@@ -42,6 +64,19 @@ const ChatView = ({ patientPhone, clinicId }) => {
             } else {
                 setMessages(data);
             }
+
+            const { data: patientData, error: patientError } = await supabase
+                .from('patients')
+                .select('is_ai_active')
+                .eq('phone', patientPhone)
+                .single();
+
+            if (patientError) {
+                console.error('Erro ao buscar paciente:', patientError);
+            } else if (patientData) {
+                setIsAiActive(patientData.is_ai_active);
+            }
+
             setLoading(false);
         };
 
@@ -91,6 +126,9 @@ const ChatView = ({ patientPhone, clinicId }) => {
 
     return (
         <div className="chat-container">
+            <div className="chat-header">
+                <ToggleSwitch checked={isAiActive} onChange={handleToggleAutomation} />
+            </div>
             <div className="chat-messages">
                 {messages.map(msg => (
                     <ChatMessage key={msg.id} message={msg} />
