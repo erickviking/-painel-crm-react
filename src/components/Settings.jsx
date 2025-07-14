@@ -15,6 +15,7 @@ const Settings = ({ clinicId }) => {
             setLoading(true);
             setMessage('');
             try {
+                // Esta chamada requer que RLS esteja configurada na tabela 'clinics'
                 const { data, error } = await supabase
                     .from('clinics')
                     .select('google_calendar_id')
@@ -43,12 +44,12 @@ const Settings = ({ clinicId }) => {
         
         try {
             const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
+            // Esta chamada requer que o endpoint no backend esteja funcionando
             const response = await fetch(`${apiUrl}/api/v1/clinics/${clinicId}`, {
                 method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',
-                    // Se sua API exigir autenticação, o token JWT do Supabase iria aqui
-                    // 'Authorization': `Bearer ${session.access_token}` 
+                    // Autenticação (se necessária) iria aqui
                 },
                 body: JSON.stringify({ google_calendar_id: googleCalendarId }),
             });
@@ -71,27 +72,32 @@ const Settings = ({ clinicId }) => {
 
     return (
         <div className="settings-container" style={{ padding: '2rem' }}>
-            <h2>Configurações da Agenda</h2>
-            <p>
-                Para integrar com o Google Agenda, compartilhe sua agenda com o e-mail da nossa conta de serviço e cole o "ID da Agenda" abaixo.
-            </p>
+            <h1>Configurações</h1>
             <form onSubmit={handleSaveChanges}>
-                <div style={{ marginBottom: '1rem' }}>
-                    <label htmlFor="google-calendar-id" style={{ display: 'block', marginBottom: '0.5rem' }}>
-                        ID da Agenda do Google
-                    </label>
-                    <input
-                        id="google-calendar-id"
-                        type="text"
-                        value={googleCalendarId}
-                        onChange={(e) => setGoogleCalendarId(e.target.value)}
-                        placeholder="exemplo@group.calendar.google.com"
-                        style={{ width: '400px', padding: '0.5rem' }}
-                    />
-                </div>
-                <button type="submit">Salvar Alterações</button>
+                <fieldset style={{ border: '1px solid #ddd', padding: '1.5rem', borderRadius: '8px' }}>
+                    <legend style={{ padding: '0 0.5rem' }}>Integração com Google Agenda</legend>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <label htmlFor="google-calendar-id" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                            ID da Agenda do Google
+                        </label>
+                        <input
+                            id="google-calendar-id"
+                            type="text"
+                            value={googleCalendarId}
+                            onChange={(e) => setGoogleCalendarId(e.target.value)}
+                            placeholder="exemplo@group.calendar.google.com"
+                            style={{ width: '400px', padding: '0.5rem', fontSize: '1rem' }}
+                        />
+                         <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.5rem 0 0 0' }}>
+                            Compartilhe sua agenda com o email do nosso serviço e cole o ID da agenda aqui.
+                        </p>
+                    </div>
+                </fieldset>
+                <button type="submit" style={{ marginTop: '1.5rem', padding: '0.75rem 1.5rem', cursor: 'pointer' }}>
+                  Salvar Alterações
+                </button>
             </form>
-            {message && <p style={{ marginTop: '1rem' }}>{message}</p>}
+            {message && <p style={{ marginTop: '1rem', color: message.startsWith('Erro') ? 'red' : 'green' }}>{message}</p>}
         </div>
     );
 };
