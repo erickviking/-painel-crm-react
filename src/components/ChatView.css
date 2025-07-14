@@ -11,6 +11,13 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.chat-header {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: flex-end;
+}
+
 .chat-messages {
     flex-grow: 1;
     overflow-y: auto;
