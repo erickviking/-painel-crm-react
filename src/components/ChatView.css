@@ -1,78 +1,232 @@
-.chat-container {
+/* --- ESTRUTURA GERAL DO PAINEL DE CHAT --- */
+.chat-view-container {
     display: flex;
-    flex-direction: column;
-    height: 80vh;
+    height: 100%;
     width: 100%;
-    max-width: 600px;
-    margin: auto;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    gap: 16px;
+    background-color: #f0f2f5; /* Um cinza claro para o fundo geral */
 }
 
+.chat-main-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Impede que o flex item cresça demais */
+    background-color: #e5ddd5;
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+}
+
+/* --- CABEÇALHO DO CHAT --- */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background-color: #f0f2f5;
+    border-bottom: 1px solid #ccc;
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* --- ÁREA DAS MENSAGENS (BOLHAS) --- */
 .chat-messages {
     flex-grow: 1;
     overflow-y: auto;
     padding: 20px;
-    background-color: #e5ddd5; /* Fundo texturizado estilo WhatsApp */
-    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
     display: flex;
     flex-direction: column;
 }
 
 .message-row {
     display: flex;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     max-width: 80%;
 }
 
-/* Alinha as mensagens recebidas (do paciente) à esquerda */
 .message-row.inbound {
-    justify-content: flex-start;
     align-self: flex-start;
 }
 
-/* Alinha as mensagens enviadas (do bot) à direita */
 .message-row.outbound {
-    justify-content: flex-end;
     align-self: flex-end;
 }
 
 .message-bubble {
-    padding: 10px 15px;
-    border-radius: 18px;
-    color: #333;
-    position: relative;
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap; /* Permite que o horário quebre a linha */
 }
 
-/* Estilo da bolha de mensagem do paciente */
 .message-row.inbound .message-bubble {
     background-color: #ffffff;
-    border-top-left-radius: 4px;
 }
 
-/* Estilo da bolha de mensagem do bot */
 .message-row.outbound .message-bubble {
     background-color: #dcf8c6;
-    border-top-right-radius: 4px;
 }
 
-.message-bubble p {
-    margin: 0;
-    padding: 0;
+.message-content {
+    padding-right: 10px;
     word-wrap: break-word; /* Garante que textos longos quebrem a linha */
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.message-meta {
+    margin-left: auto;
 }
 
 .message-time {
-    display: block;
     font-size: 0.75rem;
     color: #999;
-    text-align: right;
-    margin-top: 5px;
-    margin-left: 10px; /* Espaço entre o texto e a hora */
+    white-space: nowrap;
 }
 
 .message-row.outbound .message-time {
     color: #61934a;
 }
+
+/* --- CAMPO DE INPUT DO CHAT --- */
+.chat-input {
+    padding: 10px;
+    background-color: #f0f2f5;
+    border-top: 1px solid #e0e0e0;
+}
+
+.chat-input form {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.chat-textarea {
+    flex: 1;
+    width: 100%;
+    max-height: 150px;
+    min-height: 40px;
+    resize: none;
+    overflow-y: auto;
+    padding: 10px 14px;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.chat-input button {
+    background-color: #128c7e; /* Verde mais escuro do WhatsApp */
+    border: none;
+    color: white;
+    padding: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-input button:hover {
+    background-color: #075e54;
+}
+
+/* --- SIDEBAR DE RESUMO --- */
+.summary-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    padding: 16px;
+    background-color: #f7f7f7;
+    border-left: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summary-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+    margin: 0 0 8px 0;
+}
+
+.summary-content {
+    flex-grow: 1;
+    background-color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+}
+
+.summary-text {
+    white-space: pre-wrap; /* Respeita quebras de linha no resumo */
+}
+
+.summary-loading {
+    color: #888;
+    font-style: italic;
+}
+
+.generate-summary-button {
+    width: 100%;
+    padding: 10px;
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.generate-summary-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.generate-summary-button:disabled {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+
+/* --- ESTILOS PARA O SKELETON LOADER --- */
+.skeleton {
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite linear;
+    background: linear-gradient(to right, #e0e0e0 8%, #f0f0f0 18%, #e0e0e0 33%);
+    background-size: 800px 104px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -468px 0; }
+    100% { background-position: 468px 0; }
+}
+
+.skeleton-title { width: 40%; height: 24px; margin-bottom: 8px; }
+.skeleton-select { width: 120px; height: 32px; }
+.skeleton-input { flex: 1; height: 40px; border-radius: 20px; }
+.skeleton-button { width: 44px; height: 44px; border-radius: 50%; }
+.skeleton-summary-content { flex-grow: 1; width: 100%; }
+.skeleton-message-row-left, .skeleton-message-row-right { display: flex; margin-bottom: 12px; }
+.skeleton-message-row-left { justify-content: flex-start; }
+.skeleton-message-row-right { justify-content: flex-end; }
+.skeleton-bubble { width: 60%; height: 50px; border-radius: 8px; }
+.skeleton-bubble-short { width: 40%; height: 30px; border-radius: 8px; }

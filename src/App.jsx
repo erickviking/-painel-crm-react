@@ -1,31 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ConversationList from './components/ConversationList';
 import ChatView from './components/ChatView';
-import './App.css'; // Estilos gerais para a aplicação
+import './App.css'; // Novo estilo com layout em 2 colunas
 
 function App() {
-  // --- DADOS PARA TESTE ---
-  // No futuro, estes dados virão de uma lista de conversas selecionada pelo usuário.
-  // Por agora, vamos fixá-los para testar uma conversa específica.
-
-  // AÇÃO 1: Coloque aqui o número de telefone do PACIENTE que você está usando para testar.
-  // Formato: código do país + código de área + número (ex: 5511999998888)
-  const patientPhoneForDemo = '551151995795'; 
-
-  // AÇÃO 2: Vá no Supabase, na tabela 'clinics', copie o 'id' da clínica e cole aqui.
-const clinicIdForDemo = 'dd6a92e1-6ab5-4411-b752-d7f55151f293';
+  const [clinicId] = useState('dd6a92e1-6ab5-4411-b752-d7f55151f293'); // ID real da sua clínica
+  const [selectedPatientPhone, setSelectedPatientPhone] = useState(null);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Painel de Acompanhamento de Conversas</h1>
-      </header>
-      <main>
-        {/* Passamos os dados de teste para o componente de chat */}
-        <ChatView 
-          patientPhone={patientPhoneForDemo} 
-          clinicId={clinicIdForDemo} 
+    <div className="app-container">
+      <div className="sidebar">
+        <ConversationList
+          clinicId={clinicId}
+          selectedPatientPhone={selectedPatientPhone}
+          onSelectConversation={setSelectedPatientPhone}
         />
-      </main>
+      </div>
+
+      <div className="chat-area">
+        {selectedPatientPhone ? (
+          <ChatView
+            patientPhone={selectedPatientPhone}
+            clinicId={clinicId}
+          />
+        ) : (
+          <div className="chat-placeholder">
+            <p>Selecione uma conversa para começar</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
