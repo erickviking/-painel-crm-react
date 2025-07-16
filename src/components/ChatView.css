@@ -230,3 +230,15 @@
 .skeleton-message-row-right { justify-content: flex-end; }
 .skeleton-bubble { width: 60%; height: 50px; border-radius: 8px; }
 .skeleton-bubble-short { width: 40%; height: 30px; border-radius: 8px; }
+
+@media (max-width: 768px) {
+  .chat-view-container {
+    flex-direction: column;
+  }
+
+  .summary-sidebar {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+  }
+}
