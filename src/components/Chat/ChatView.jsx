@@ -2,7 +2,7 @@
 // Description: Versão final e otimizada do componente, incorporando Skeleton Loader e busca de dados paralela.
 
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 import ChatViewSkeleton from './ChatViewSkeleton';
 import './ChatView.css';
 

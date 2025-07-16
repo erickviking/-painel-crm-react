@@ -1,7 +1,7 @@
 // File: src/components/ConversationList.jsx (Com a correção do Debounce)
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

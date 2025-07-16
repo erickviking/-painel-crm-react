@@ -1,9 +1,9 @@
 // File: src/App.jsx (Versão Final com Navegação e Página de Configurações)
 
 import React, { useState } from 'react';
-import ConversationList from './components/ConversationList';
-import ChatView from './components/ChatView'; // Assumindo que este componente existe
-import Settings from './components/Settings';
+import ConversationList from './components/Conversations/ConversationList';
+import ChatView from './components/Chat/ChatView';
+import Settings from './components/Config/Settings';
 import './App.css'; // O CSS geral que contém o layout
 
 function App() {
