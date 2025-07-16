@@ -1,15 +1,13 @@
 // File: src/App.jsx (Versão Final com Navegação e Página de Configurações)
 
 import React, { useState } from 'react';
-import ConversationList from './components/ConversationList';
-import ChatView from './components/ChatView'; // Assumindo que este componente existe
-import Settings from './components/Settings';
+import Conversations from './pages/Conversations';
+import Settings from './pages/Settings';
 import './App.css'; // O CSS geral que contém o layout
 
 function App() {
   // Em uma aplicação real, o ID da clínica viria do login do usuário.
-  const [clinicId] = useState('dd6a92e1-6ab5-4411-b752-d7f55151f293'); 
-  const [selectedPatientPhone, setSelectedPatientPhone] = useState(null);
+  const [clinicId] = useState('dd6a92e1-6ab5-4411-b752-d7f55151f293');
   
   // Estado para controlar qual página está ativa: 'conversas' ou 'settings'
   const [currentPage, setCurrentPage] = useState('conversas'); 
@@ -26,30 +24,7 @@ function App() {
       
       case 'conversas':
       default:
-        // Por padrão, ou se for 'conversas', renderiza a visão de chat
-        return (
-          <div className="crm-layout">
-            <div className="sidebar">
-              <ConversationList
-                clinicId={clinicId}
-                selectedPatientPhone={selectedPatientPhone}
-                onSelectConversation={setSelectedPatientPhone}
-              />
-            </div>
-            <div className="chat-area">
-              {selectedPatientPhone ? (
-                <ChatView
-                  patientPhone={selectedPatientPhone}
-                  clinicId={clinicId}
-                />
-              ) : (
-                <div className="chat-placeholder">
-                  <p>Selecione uma conversa para começar</p>
-                </div>
-              )}
-            </div>
-          </div>
-        );
+        return <Conversations clinicId={clinicId} />;
     }
   };
 
