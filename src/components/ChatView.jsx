@@ -168,7 +168,6 @@ const handleGenerateSummary = async () => {
     });
 
     const responseText = await response.text();
-    console.log("📄 Texto bruto da resposta:", responseText);
 
     let data;
     try {
