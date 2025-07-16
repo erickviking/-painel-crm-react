@@ -1,6 +1,6 @@
 // File: src/components/Settings.jsx
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient'; // Ajuste o caminho se necessário
+import { supabase } from '../../supabaseClient'; // Ajuste o caminho se necessário
 
 const Settings = ({ clinicId }) => {
     const [googleCalendarId, setGoogleCalendarId] = useState('');
