@@ -71,3 +71,54 @@
   gap: 0.5rem;
   background-color: #f0f0f0;
 }
+
+/* --- NOVO MENU DE NAVEGAÇÃO LATERAL --- */
+.app-nav {
+  width: 220px;
+  background-color: #f0f2f5;
+  padding: 1rem 0;
+  border-right: 1px solid #d1d7db;
+  flex-shrink: 0;
+}
+
+.app-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.app-nav li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #3b4a54;
+  border-right: 3px solid transparent; /* Borda para o item ativo */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.app-nav li:hover {
+  background-color: #e8eaed;
+}
+
+.app-nav li.active {
+  background-color: #e6f2ff;
+  color: #005fff;
+  border-right-color: #005fff;
+}
+
+/* --- Container para o conteúdo principal --- */
+.main-content {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+/* O layout do CRM agora vive dentro do main-content */
+.crm-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
