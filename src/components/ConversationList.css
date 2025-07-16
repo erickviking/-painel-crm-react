@@ -134,3 +134,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+@media (max-width: 768px) {
+  .conversation-list {
+    height: auto;
+  }
+}

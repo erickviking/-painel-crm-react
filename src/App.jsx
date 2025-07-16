@@ -8,8 +8,9 @@ import './App.css'; // O CSS geral que contém o layout
 
 function App() {
   // Em uma aplicação real, o ID da clínica viria do login do usuário.
-  const [clinicId] = useState('dd6a92e1-6ab5-4411-b752-d7f55151f293'); 
+  const [clinicId] = useState('dd6a92e1-6ab5-4411-b752-d7f55151f293');
   const [selectedPatientPhone, setSelectedPatientPhone] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   // Estado para controlar qual página está ativa: 'conversas' ou 'settings'
   const [currentPage, setCurrentPage] = useState('conversas'); 
@@ -55,17 +56,20 @@ function App() {
 
   return (
     <div className="app-container">
+      <button className="nav-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+        ☰
+      </button>
       {/* MENU DE NAVEGAÇÃO LATERAL */}
-      <nav className="app-nav">
+      <nav className={`app-nav ${isMenuOpen ? 'open' : ''}`}> 
         <ul>
-          <li 
-            onClick={() => setCurrentPage('conversas')} 
+          <li
+            onClick={() => { setCurrentPage('conversas'); setIsMenuOpen(false); }}
             className={currentPage === 'conversas' ? 'active' : ''}
           >
             <span role="img" aria-label="Conversas">💬</span> Conversas
           </li>
-          <li 
-            onClick={() => setCurrentPage('settings')} 
+          <li
+            onClick={() => { setCurrentPage('settings'); setIsMenuOpen(false); }}
             className={currentPage === 'settings' ? 'active' : ''}
           >
             <span role="img" aria-label="Configurações">⚙️</span> Configurações

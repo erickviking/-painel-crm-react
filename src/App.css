@@ -122,3 +122,53 @@
   height: 100%;
   width: 100%;
 }
+
+/* Botão que exibe/oculta o menu em telas pequenas */
+.nav-toggle {
+  display: none;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #f0f2f5;
+  border: 1px solid #d1d7db;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .nav-toggle {
+    display: block;
+    z-index: 1100;
+  }
+
+  .app-nav {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+
+  .app-nav.open {
+    transform: translateX(0);
+  }
+
+  .crm-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    height: 40vh;
+  }
+
+  .chat-area {
+    flex: 1;
+  }
+}
