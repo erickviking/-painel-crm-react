@@ -1,13 +1,12 @@
-// File: src/components/ChatView.jsx
-// Description: Versão final e otimizada do componente, incorporando Skeleton Loader e busca de dados paralela.
+// Ficheiro: src/components/≈ (Versão Final Reescrita)
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import ChatViewSkeleton from './ChatViewSkeleton';
 import './ChatView.css';
+import { FaPaperPlane } from 'react-icons/fa';
 
-// --- SUB-COMPONENTES INTERNOS PARA MANTER O JSX LIMPO ---
-
+// --- SUB-COMPONENTE: MENSAGEM INDIVIDUAL ---
 const ChatMessage = ({ message }) => (
   <div className={`message-row ${message.direction}`}>
     <div className="message-bubble">
@@ -26,27 +25,27 @@ const ChatMessage = ({ message }) => (
   </div>
 );
 
+// --- SUB-COMPONENTE: PAINEL DE RESUMO ---
 const SummarySidebar = ({ summary, isLoading, onGenerate }) => (
     <div className="summary-sidebar">
         <h4 className="summary-title">Resumo da Conversa</h4>
         <div className="summary-content">
             {isLoading ? (
-                <p className="summary-loading">Carregando...</p>
+                <p className="summary-loading">A carregar...</p>
             ) : (
                 <p className="summary-text">{summary || 'Nenhum resumo gerado. Clique no botão para criar ou atualizar.'}</p>
             )}
         </div>
-        <button onClick={onGenerate} className="generate-summary-button" disabled={isLoading}>
-            {isLoading ? 'Gerando...' : 'Gerar / Atualizar Resumo'}
+        {/* ALTERAÇÃO: Classes de estilo aplicadas para o botão secundário. */}
+        <button onClick={onGenerate} className="btn btn-secondary" disabled={isLoading}>
+            {isLoading ? 'A gerar...' : 'Gerar / Atualizar Resumo'}
         </button>
     </div>
 );
 
 
-// --- COMPONENTE PRINCIPAL OTIMIZADO ---
-
+// --- COMPONENTE PRINCIPAL: CHATVIEW ---
 const ChatView = ({ patientPhone, clinicId }) => {
-  // --- ESTADOS DO COMPONENTE ---
   const [messages, setMessages] = useState([]);
   const [patientName, setPatientName] = useState('');
   const [status, setStatus] = useState('lead');
@@ -54,21 +53,14 @@ const ChatView = ({ patientPhone, clinicId }) => {
   const [inputValue, setInputValue] = useState('');
   const [summary, setSummary] = useState('');
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
-
-  // --- REFS PARA CONTROLE DE DOM ---
   const messagesEndRef = useRef(null);
-  const textareaRef = useRef(null);
 
-  // --- EFEITOS (LIFECYCLE) ---
-
-  // Efeito para rolar para a última mensagem
   useEffect(() => {
     if (!loading) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, loading]);
 
-  // Efeito principal para buscar todos os dados da conversa de forma otimizada
   useEffect(() => {
     if (!patientPhone || !clinicId) {
       setLoading(false);
@@ -78,21 +70,18 @@ const ChatView = ({ patientPhone, clinicId }) => {
 
     const fetchAllData = async () => {
         try {
-            // As 3 buscas são disparadas em paralelo para economizar tempo
             const [messagesPromise, patientPromise, summaryPromise] = [
                 supabase.from('messages').select('*').eq('patient_phone', patientPhone).eq('clinic_id', clinicId).order('created_at', { ascending: true }),
                 supabase.from('patients').select('name, status').eq('phone', patientPhone).single(),
                 supabase.from('conversation_summaries').select('summary').eq('phone', patientPhone).eq('clinic_id', clinicId).single()
             ];
             
-            // Aguarda a finalização de todas as buscas
             const [{ data: messagesData, error: messagesError }, { data: patientData, error: patientError }, { data: summaryData, error: summaryError }] = await Promise.all([messagesPromise, patientPromise, summaryPromise]);
 
-            // Processa os resultados, tratando possíveis erros de cada busca
             if (messagesError) throw messagesError;
             setMessages(messagesData || []);
             
-            if (patientError && patientError.code !== 'PGRST116') throw patientError; // PGRST116 = "0 linhas encontradas", o que é ok.
+            if (patientError && patientError.code !== 'PGRST116') throw patientError;
             setPatientName(patientData?.name || patientPhone);
             setStatus(patientData?.status || 'lead');
 
@@ -101,10 +90,6 @@ const ChatView = ({ patientPhone, clinicId }) => {
 
         } catch (error) {
             console.error("❌ Erro ao buscar dados da conversa:", error.message);
-            // Zera os estados em caso de erro para não mostrar dados antigos
-            setMessages([]);
-            setPatientName(patientPhone);
-            setSummary('');
         } finally {
             setLoading(false);
             setIsSummaryLoading(false);
@@ -113,7 +98,6 @@ const ChatView = ({ patientPhone, clinicId }) => {
 
     fetchAllData();
 
-    // Canal de Real-time para novas mensagens
     const channel = supabase.channel(`realtime-chat:${patientPhone}`).on('broadcast', { event: 'new_message' }, (response) => {
         const newMessage = response.payload;
         if (newMessage.patient_phone === patientPhone) {
@@ -123,29 +107,34 @@ const ChatView = ({ patientPhone, clinicId }) => {
 
     return () => supabase.removeChannel(channel);
   }, [patientPhone, clinicId]);
-
-  // Efeito para auto-ajuste da altura do textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [inputValue]);
-
-
+  
   // --- FUNÇÕES DE HANDLER ---
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    await supabase.from('messages').insert({
-      content: inputValue.trim(),
-      direction: 'outbound',
-      patient_phone: patientPhone,
-      clinic_id: clinicId,
-    });
+    const textToSend = inputValue.trim();
     setInputValue('');
+
+    try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/api/v1/conversations/${patientPhone}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: textToSend,
+                clinicId: clinicId
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Falha ao enviar mensagem pelo backend');
+        }
+
+    } catch (error) {
+        console.error("Erro de rede ao tentar enviar mensagem:", error);
+        alert(`Erro de rede: ${error.message}`);
+    }
   };
 
   const handleStatusChange = async (e) => {
@@ -154,50 +143,32 @@ const ChatView = ({ patientPhone, clinicId }) => {
     await supabase.from('patients').update({ status: newStatus }).eq('phone', patientPhone);
   };
   
-const handleGenerateSummary = async () => {
-  setIsSummaryLoading(true);
-
-  try {
-    const response = await fetch(`/api/v1/conversations/${patientPhone}/summarize`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({ clinicId }),
-    });
-
-    const responseText = await response.text();
-    console.log("📄 Texto bruto da resposta:", responseText);
-
-    let data;
+  const handleGenerateSummary = async () => {
+    setIsSummaryLoading(true);
     try {
-      data = JSON.parse(responseText);
-    } catch (parseErr) {
-      throw new Error("Resposta inválida do servidor. Não foi possível interpretar como JSON.");
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/api/v1/conversations/${patientPhone}/summarize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clinicId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Erro desconhecido" }));
+        throw new Error(errorData.error || "Erro inesperado ao gerar resumo.");
+      }
+
+      const data = await response.json();
+      setSummary(data.summary);
+
+    } catch (err) { // <<< A CHAVE DE ABERTURA ESTAVA FALTANDO AQUI
+      console.error("❌ Erro ao gerar resumo:", err);
+      alert(`Erro ao gerar resumo: ${err.message}`);
+    } finally { // <<< E A DE FECHAMENTO AQUI
+      setIsSummaryLoading(false);
     }
+  };
 
-    if (!response.ok) {
-      const errMsg = data?.error || "Erro inesperado ao gerar resumo.";
-      throw new Error(errMsg);
-    }
-
-    if (!data?.summary) {
-      throw new Error("Resumo vazio ou malformado.");
-    }
-
-    setSummary(data.summary);
-
-  } catch (err) {
-    console.error("❌ Erro ao gerar resumo:", err);
-    alert(`Erro ao gerar resumo: ${err.message}`);
-  } finally {
-    setIsSummaryLoading(false);
-  }
-};
-
-  // --- RENDERIZAÇÃO DO COMPONENTE ---
-
+  // --- RENDERIZAÇÃO ---
   if (loading) {
     return <ChatViewSkeleton />;
   }
@@ -220,19 +191,19 @@ const handleGenerateSummary = async () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="chat-input">
-          <form onSubmit={handleSendMessage}>
-            <textarea
-              ref={textareaRef}
-              className="chat-textarea"
-              placeholder="Digite uma mensagem para enviar..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              rows={1}
-            />
-            <button type="submit">Enviar</button>
-          </form>
-        </div>
+        {/* ALTERAÇÃO: A antiga área de input foi substituída por esta nova. */}
+        <form className="chat-input-area" onSubmit={handleSendMessage}>
+          <input
+            type="text"
+            className="message-input"
+            placeholder="Digite uma mensagem para enviar..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+          />
+          <button type="submit" className="btn btn-primary send-button" disabled={!inputValue.trim()}>
+            <FaPaperPlane size={18} />
+          </button>
+        </form>
       </div>
 
       <SummarySidebar 

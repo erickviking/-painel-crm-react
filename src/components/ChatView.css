@@ -230,3 +230,91 @@
 .skeleton-message-row-right { justify-content: flex-end; }
 .skeleton-bubble { width: 60%; height: 50px; border-radius: 8px; }
 .skeleton-bubble-short { width: 40%; height: 30px; border-radius: 8px; }
+
+/* Arquivo: ChatView.css (ou o CSS correspondente) */
+
+/* --- ESTILOS PARA A NOVA ÁREA DE INPUT --- */
+
+.chat-input-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background-color: #f0f2f5; /* Cor de fundo da área */
+  border-top: 1px solid #d1d7db;
+}
+
+.message-input {
+  flex-grow: 1; /* Faz o input ocupar todo o espaço disponível */
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 20px; /* Bordas arredondadas */
+  font-size: 1rem;
+  outline: none;
+}
+
+.message-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.send-button {
+  /* Transforma o botão em um círculo */
+  width: 48px;
+  height: 48px;
+  padding: 0; /* Remove padding para o ícone centralizar */
+  border-radius: 50%;
+  flex-shrink: 0; /* Impede que o botão encolha */
+}
+/* --- ESTILOS PARA EDIÇÃO DE NOME --- */
+
+.convo-item__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-name-icon {
+  color: #888;
+  cursor: pointer;
+  opacity: 0; /* O ícone fica invisível por padrão */
+  transition: opacity 0.2s ease;
+}
+
+/* O ícone de edição aparece quando o mouse está sobre o item da conversa */
+.conversation-item:hover .edit-name-icon {
+  opacity: 1;
+}
+
+.edit-name-icon:hover {
+  color: #333;
+}
+
+.edit-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.edit-name-input {
+  flex-grow: 1;
+  padding: 4px 8px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.save-name-button {
+  padding: 4px 12px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.save-name-button:hover {
+  background-color: #0056b3;
+}

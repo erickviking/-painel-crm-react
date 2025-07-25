@@ -1,6 +1,7 @@
 // File: src/components/ConversationList.jsx (Com a correção do Debounce)
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { FiEdit2 } from 'react-icons/fi'; 
 import { supabase } from '../supabaseClient';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
@@ -30,16 +31,76 @@ const formatRelativeTime = (date) => {
 };
 
 const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
-    const { patient_name, patient_phone, content, created_at } = conversation;
-    const name = patient_name || patient_phone;
-    const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=48`;
+    const { patient_name, patient_phone, created_at } = conversation;
+
+    // Estados para controlar o modo de edição e o valor do nome
+    const [isEditing, setIsEditing] = useState(false);
+    const [nameValue, setNameValue] = useState(patient_name || patient_phone);
+
+    const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(nameValue)}&background=random&size=48`;
+
+    // Função para salvar o novo nome no Supabase
+    const handleSaveName = async (e) => {
+        // Impede que o clique no botão "Salvar" selecione a conversa inteira
+        e.stopPropagation(); 
+        
+        if (!nameValue.trim() || nameValue.trim() === patient_phone) {
+            // Se o nome estiver vazio ou for igual ao telefone, não faz nada
+            setIsEditing(false);
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('patients')
+                .update({ name: nameValue.trim() })
+                .eq('phone', patient_phone);
+
+            if (error) {
+                throw error;
+            }
+            
+            console.log(`Nome do contato ${patient_phone} atualizado para: ${nameValue.trim()}`);
+            setIsEditing(false); // Volta para o modo de visualização
+
+        } catch (error) {
+            console.error("Erro ao atualizar o nome do paciente:", error.message);
+            // Poderia adicionar um alerta para o usuário aqui
+        }
+    };
+
+    const handleEditClick = (e) => {
+        // Impede que o clique no ícone selecione a conversa
+        e.stopPropagation(); 
+        setIsEditing(true);
+    };
 
     return (
         <div className={`conversation-item ${isSelected ? 'selected' : ''}`} onClick={onClick}>
             <img src={avatar} alt="Avatar" className="convo-item__avatar" loading="lazy" />
             <div className="convo-item__details">
                 <div className="convo-item__header">
-                    <span className="convo-item__name">{name}</span>
+
+                    {/* Lógica de renderização condicional */}
+                    {isEditing ? (
+                        <div className="edit-name-wrapper">
+                            <input
+                                type="text"
+                                value={nameValue}
+                                className="edit-name-input"
+                                onChange={(e) => setNameValue(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                autoFocus
+                            />
+                            <button className="save-name-button" onClick={handleSaveName}>Salvar</button>
+                        </div>
+                    ) : (
+                        <span className="convo-item__name">
+                            {nameValue}
+                            <FiEdit2 className="edit-name-icon" onClick={handleEditClick} />
+                        </span>
+                    )}
+
                     <span className="convo-item__time">{formatRelativeTime(created_at)}</span>
                 </div>
             </div>

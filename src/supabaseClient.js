@@ -5,6 +5,10 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// ADICIONE ESTAS LINHAS PARA DIAGNÓSTICO
+console.log("DIAGNÓSTICO - URL do Supabase:", supabaseUrl);
+console.log("DIAGNÓSTICO - Chave Anon do Supabase:", supabaseAnonKey);
+
 // Uma validação para garantir que as variáveis foram carregadas corretamente.
 // Se não foram, o aplicativo irá falhar na inicialização com uma mensagem clara.
 if (!supabaseUrl || !supabaseAnonKey) {
