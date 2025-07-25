@@ -1,4 +1,4 @@
-// File: src/components/ConversationList.jsx (Com a correção do Debounce)
+// File: src/components/ConversationList.jsx (Versão Corrigida com Sincronização de Status)
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FiEdit2 } from 'react-icons/fi'; 
@@ -8,7 +8,7 @@ import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import './ConversationList.css';
 
-// --- HOOK CUSTOMIZADO PARA DEBOUNCE (REINSERIDO) ---
+// --- HOOK CUSTOMIZADO PARA DEBOUNCE (sem alterações) ---
 const useDebounce = (value, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
     useEffect(() => {
@@ -22,6 +22,7 @@ const useDebounce = (value, delay) => {
     return debouncedValue;
 };
 
+// --- FUNÇÃO DE FORMATAÇÃO DE TEMPO (sem alterações) ---
 const formatRelativeTime = (date) => {
     if (!date) return '';
     const d = new Date(date);
@@ -30,47 +31,33 @@ const formatRelativeTime = (date) => {
     return formatDistanceToNow(d, { addSuffix: true, locale: ptBR });
 };
 
+// --- COMPONENTE DO ITEM DA CONVERSA (sem alterações) ---
 const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
     const { patient_name, patient_phone, created_at } = conversation;
-
-    // Estados para controlar o modo de edição e o valor do nome
     const [isEditing, setIsEditing] = useState(false);
     const [nameValue, setNameValue] = useState(patient_name || patient_phone);
-
     const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(nameValue)}&background=random&size=48`;
 
-    // Função para salvar o novo nome no Supabase
     const handleSaveName = async (e) => {
-        // Impede que o clique no botão "Salvar" selecione a conversa inteira
         e.stopPropagation(); 
-        
         if (!nameValue.trim() || nameValue.trim() === patient_phone) {
-            // Se o nome estiver vazio ou for igual ao telefone, não faz nada
             setIsEditing(false);
             return;
         }
-
         try {
             const { error } = await supabase
                 .from('patients')
                 .update({ name: nameValue.trim() })
                 .eq('phone', patient_phone);
-
-            if (error) {
-                throw error;
-            }
-            
+            if (error) throw error;
             console.log(`Nome do contato ${patient_phone} atualizado para: ${nameValue.trim()}`);
-            setIsEditing(false); // Volta para o modo de visualização
-
+            setIsEditing(false);
         } catch (error) {
             console.error("Erro ao atualizar o nome do paciente:", error.message);
-            // Poderia adicionar um alerta para o usuário aqui
         }
     };
 
     const handleEditClick = (e) => {
-        // Impede que o clique no ícone selecione a conversa
         e.stopPropagation(); 
         setIsEditing(true);
     };
@@ -80,8 +67,6 @@ const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
             <img src={avatar} alt="Avatar" className="convo-item__avatar" loading="lazy" />
             <div className="convo-item__details">
                 <div className="convo-item__header">
-
-                    {/* Lógica de renderização condicional */}
                     {isEditing ? (
                         <div className="edit-name-wrapper">
                             <input
@@ -100,7 +85,6 @@ const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
                             <FiEdit2 className="edit-name-icon" onClick={handleEditClick} />
                         </span>
                     )}
-
                     <span className="convo-item__time">{formatRelativeTime(created_at)}</span>
                 </div>
             </div>
@@ -108,21 +92,20 @@ const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
     );
 });
 
-
+// --- COMPONENTE PRINCIPAL DA LISTA (com alterações) ---
 const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone }) => {
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('all');
     const [filterDate, setFilterDate] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
-    
-    // --- DECLARAÇÃO DA VARIÁVEL FALTANTE (REINSERIDA) ---
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+    // ### INÍCIO DA ALTERAÇÃO ###
     useEffect(() => {
         const fetchConversations = async () => {
             if (!clinicId) { setLoading(false); return; }
-            setLoading(true);
+            // Não definimos mais setLoading(true) aqui para evitar piscar a tela em atualizações em tempo real
             try {
                 const { data, error } = await supabase.rpc('get_latest_messages_per_patient', { 
                     target_clinic_id: clinicId 
@@ -136,15 +119,40 @@ const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone
                 setLoading(false); 
             }
         };
+
+        // Carregamento inicial
+        setLoading(true);
         fetchConversations();
-        const channel = supabase.channel('public:messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, fetchConversations).subscribe();
-        return () => supabase.removeChannel(channel);
+
+        // Listener para NOVAS MENSAGENS
+        const messagesChannel = supabase
+            .channel('public:messages')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+                console.log('Nova mensagem detectada, recarregando conversas.');
+                fetchConversations();
+            })
+            .subscribe();
+
+        // Listener para ATUALIZAÇÕES DE PACIENTES (status, nome, etc.)
+        const patientsChannel = supabase
+            .channel('public:patients')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'patients' }, (payload) => {
+                console.log('Atualização em paciente detectada, recarregando conversas.', payload);
+                fetchConversations();
+            })
+            .subscribe();
+
+        // Limpeza dos canais ao desmontar o componente
+        return () => {
+            supabase.removeChannel(messagesChannel);
+            supabase.removeChannel(patientsChannel);
+        };
     }, [clinicId]);
+    // ### FIM DA ALTERAÇÃO ###
     
     const filteredConversations = useMemo(() => {
         return (conversations || [])
             .filter(c => {
-                // Agora a variável debouncedSearchTerm existe e a busca funciona
                 if (!debouncedSearchTerm) return true;
                 const term = debouncedSearchTerm.toLowerCase();
                 return (c.patient_name || '').toLowerCase().includes(term) || c.patient_phone.includes(term);
