@@ -107,11 +107,15 @@ const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone
             if (!clinicId) { setLoading(false); return; }
             // Não definimos mais setLoading(true) aqui para evitar piscar a tela em atualizações em tempo real
             try {
-                const { data, error } = await supabase.rpc('get_latest_messages_per_patient', { 
-                    target_clinic_id: clinicId 
+                const { data, error } = await supabase.rpc('get_latest_messages_per_patient', {
+                    target_clinic_id: clinicId
                 });
                 if (error) throw error;
-                setConversations(data || []);
+                const normalized = (data || []).map(c => ({
+                    ...c,
+                    status: c.status ?? c.patient_status ?? null,
+                }));
+                setConversations(normalized);
             } catch (error) {
                 console.error('❌ Erro ao buscar dados das conversas:', error.message);
                 setConversations([]);
