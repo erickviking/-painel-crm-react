@@ -1,32 +1,82 @@
-// File: src/App.jsx (Versão Final com Navegação e Página de Configurações)
+// File: src/App.jsx (Versão Final com Supabase Auth e Multi-tenant)
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from './contexts/AuthContext'; // Hook de autenticação
+import { supabase } from './supabaseClient';
 import ConversationList from './components/ConversationList';
-import ChatView from './components/ChatView'; // Assumindo que este componente existe
+import ChatView from './components/ChatView';
 import Settings from './components/Settings';
-import './App.css'; // O CSS geral que contém o layout
+import LoginPage from './pages/LoginPage';
+import './App.css';
 
 function App() {
-  // Em uma aplicação real, o ID da clínica viria do login do usuário.
-  const [clinicId] = useState('dd6a92e1-6ab5-4411-b752-d7f55151f293'); 
-  const [selectedPatientPhone, setSelectedPatientPhone] = useState(null);
-  
-  // Estado para controlar qual página está ativa: 'conversas' ou 'settings'
-  const [currentPage, setCurrentPage] = useState('conversas'); 
+  const { session, user, signOut } = useAuth();
+  const [clinicId, setClinicId] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
-  /**
-   * Renderiza o conteúdo da página principal de forma condicional
-   * com base no estado 'currentPage'.
-   */
+  const [selectedPatientPhone, setSelectedPatientPhone] = useState(null);
+  const [currentPage, setCurrentPage] = useState('conversas');
+
+  // 🔹 Efeito para carregar o perfil do usuário logado e pegar clinicId
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) {
+        setClinicId(null);
+        setLoadingProfile(false);
+        return;
+      }
+
+      setLoadingProfile(true);
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('clinic_id')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar perfil do usuário:', error);
+      }
+
+      setClinicId(data?.clinic_id || null);
+      setLoadingProfile(false);
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  // 🔹 Se não houver sessão, mostra a página de login
+  if (!session) {
+    return <LoginPage />;
+  }
+
+  // 🔹 Enquanto o perfil está carregando
+  if (loadingProfile) {
+    return (
+      <div className="loading-screen">
+        <p>Carregando perfil da clínica...</p>
+      </div>
+    );
+  }
+
+  // 🔹 Se não houver clinicId, avisa o usuário
+  if (!clinicId) {
+    return (
+      <div className="no-clinic-screen">
+        <p>Não foi possível carregar o perfil da clínica.</p>
+        <button onClick={signOut}>Sair</button>
+      </div>
+    );
+  }
+
+  // 🔹 Conteúdo principal condicional
   const renderPageContent = () => {
     switch (currentPage) {
       case 'settings':
-        // Se a página for 'settings', renderiza o componente de configurações
         return <Settings clinicId={clinicId} />;
-      
+
       case 'conversas':
       default:
-        // Por padrão, ou se for 'conversas', renderiza a visão de chat
         return (
           <div className="crm-layout">
             <div className="sidebar">
@@ -58,22 +108,27 @@ function App() {
       {/* MENU DE NAVEGAÇÃO LATERAL */}
       <nav className="app-nav">
         <ul>
-          <li 
-            onClick={() => setCurrentPage('conversas')} 
+          <li
+            onClick={() => setCurrentPage('conversas')}
             className={currentPage === 'conversas' ? 'active' : ''}
           >
             <span role="img" aria-label="Conversas">💬</span> Conversas
           </li>
-          <li 
-            onClick={() => setCurrentPage('settings')} 
+          <li
+            onClick={() => setCurrentPage('settings')}
             className={currentPage === 'settings' ? 'active' : ''}
           >
             <span role="img" aria-label="Configurações">⚙️</span> Configurações
           </li>
         </ul>
+        <div className="logout-container">
+          <button onClick={signOut} className="logout-button">
+            Sair
+          </button>
+        </div>
       </nav>
 
-      {/* ÁREA DE CONTEÚDO PRINCIPAL QUE MUDA DINAMICAMENTE */}
+      {/* ÁREA DE CONTEÚDO PRINCIPAL */}
       <main className="main-content">
         {renderPageContent()}
       </main>
