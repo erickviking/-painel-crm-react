@@ -182,7 +182,7 @@ const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone
   return (
     <div className="conversation-list">
       <div className="list-header">
-        <h2>Conversas</h2>
+        <h2>Conversations</h2>
         <input
           type="text"
           placeholder="Buscar por nome ou telefone..."

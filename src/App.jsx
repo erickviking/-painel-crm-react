@@ -1,12 +1,12 @@
-// File: src/App.jsx (Versão Final com Supabase Auth e Multi-tenant)
+// File: src/App.jsx (English Version for Meta Review)
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from './contexts/AuthContext'; // Hook de autenticação
+import { useAuth } from './contexts/AuthContext'; // Authentication hook
 import { supabase } from './supabaseClient';
 import ConversationList from './components/ConversationList';
 import ChatView from './components/ChatView';
 import Settings from './components/Settings';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/LoginPage.jsx';
 import './App.css';
 
 function App() {
@@ -15,9 +15,9 @@ function App() {
   const [loadingProfile, setLoadingProfile] = useState(true);
 
   const [selectedPatientPhone, setSelectedPatientPhone] = useState(null);
-  const [currentPage, setCurrentPage] = useState('conversas');
+  const [currentPage, setCurrentPage] = useState('conversations'); // Default page is now 'conversations'
 
-  // 🔹 Efeito para carregar o perfil do usuário logado e pegar clinicId
+  // 🔹 Effect to load the logged-in user's profile and get the clinicId
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) {
@@ -34,8 +34,8 @@ function App() {
         .eq('id', user.id)
         .single();
 
-      if (error) {
-        console.error('Erro ao buscar perfil do usuário:', error);
+      if (error && error.code !== 'PGRST116') { // Ignore "No rows found" error
+        console.error('Error fetching user profile:', error);
       }
 
       setClinicId(data?.clinic_id || null);
@@ -45,37 +45,37 @@ function App() {
     fetchProfile();
   }, [user]);
 
-  // 🔹 Se não houver sessão, mostra a página de login
+  // 🔹 If there is no session, show the login page
   if (!session) {
     return <LoginPage />;
   }
 
-  // 🔹 Enquanto o perfil está carregando
+  // 🔹 While the profile is loading
   if (loadingProfile) {
     return (
       <div className="loading-screen">
-        <p>Carregando perfil da clínica...</p>
+        <p>Loading clinic profile...</p>
       </div>
     );
   }
 
-  // 🔹 Se não houver clinicId, avisa o usuário
+  // 🔹 If there is no clinicId, notify the user
   if (!clinicId) {
     return (
       <div className="no-clinic-screen">
-        <p>Não foi possível carregar o perfil da clínica.</p>
-        <button onClick={signOut}>Sair</button>
+        <p>Could not load the clinic profile. Please contact support.</p>
+        <button onClick={signOut}>Logout</button>
       </div>
     );
   }
 
-  // 🔹 Conteúdo principal condicional
+  // 🔹 Conditional main content
   const renderPageContent = () => {
     switch (currentPage) {
       case 'settings':
         return <Settings clinicId={clinicId} />;
 
-      case 'conversas':
+      case 'conversations':
       default:
         return (
           <div className="crm-layout">
@@ -94,7 +94,7 @@ function App() {
                 />
               ) : (
                 <div className="chat-placeholder">
-                  <p>Selecione uma conversa para começar</p>
+                  <p>Select a conversation to get started</p>
                 </div>
               )}
             </div>
@@ -105,30 +105,30 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* MENU DE NAVEGAÇÃO LATERAL */}
+      {/* SIDE NAVIGATION MENU */}
       <nav className="app-nav">
         <ul>
           <li
-            onClick={() => setCurrentPage('conversas')}
+            onClick={() => setCurrentPage('conversations')}
             className={currentPage === 'conversas' ? 'active' : ''}
           >
-            <span role="img" aria-label="Conversas">💬</span> Conversas
+            <span role="img" aria-label="Conversations">💬</span> Conversations
           </li>
           <li
             onClick={() => setCurrentPage('settings')}
             className={currentPage === 'settings' ? 'active' : ''}
           >
-            <span role="img" aria-label="Configurações">⚙️</span> Configurações
+            <span role="img" aria-label="Settings">⚙️</span> Settings
           </li>
         </ul>
         <div className="logout-container">
           <button onClick={signOut} className="logout-button">
-            Sair
+            Logout
           </button>
         </div>
       </nav>
 
-      {/* ÁREA DE CONTEÚDO PRINCIPAL */}
+      {/* MAIN CONTENT AREA */}
       <main className="main-content">
         {renderPageContent()}
       </main>

@@ -31,7 +31,7 @@ const ChatMessage = ({ message }) => (
 // --- SIDEBAR DE RESUMO ---
 const SummarySidebar = ({ summary, isLoading, onGenerate }) => (
   <div className="summary-sidebar">
-    <h4 className="summary-title">Resumo da Conversa</h4>
+    <h4 className="summary-title">Conversation Summary</h4>
     <div className="summary-content">
       {isLoading ? (
         <p className="summary-loading">Carregando...</p>

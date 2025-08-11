@@ -25,7 +25,7 @@ const LoginPage = () => {
   return (
     <div style={styles.container}>
       <div style={styles.loginBox}>
-        <h2>Login do CRM</h2>
+        <h2>M2ia Login</h2>
         <form onSubmit={handleLogin}>
           <input
             type="email"
@@ -36,12 +36,12 @@ const LoginPage = () => {
           />
           <input
             type="password"
-            placeholder="Senha"
+            placeholder="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={styles.input}
           />
-          <button type="submit" style={styles.button}>Entrar</button>
+          <button type="submit" style={styles.button}>Sign In</button>
           {error && <p style={styles.error}>{error}</p>}
         </form>
       </div>
