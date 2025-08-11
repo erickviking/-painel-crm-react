@@ -1,5 +1,7 @@
 // File: src/App.jsx (English Version for Meta Review)
 
+// Forcing a new build for Vercel - August 11, 2025
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext'; // Authentication hook
 import { supabase } from './supabaseClient';
