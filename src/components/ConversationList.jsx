@@ -1,15 +1,12 @@
-// File: src/components/ConversationList.jsx (Versão Final Multi-Tenant e Segura com RPC)
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FiEdit2 } from 'react-icons/fi';
 import { supabase } from '../supabaseClient';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale'; // Changed to English locale
 import './ConversationList.css';
-import { useAuth } from '../contexts/AuthContext';
 
-// --- HOOK CUSTOMIZADO PARA DEBOUNCE ---
+// --- CUSTOM DEBOUNCE HOOK (No changes) ---
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -19,16 +16,16 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-// --- FUNÇÃO DE FORMATAÇÃO DE TEMPO ---
+// --- TIME FORMATTING FUNCTION (Translated) ---
 const formatRelativeTime = (date) => {
   if (!date) return '';
   const d = new Date(date);
   if (isToday(d)) return format(d, 'HH:mm');
-  if (isYesterday(d)) return 'Ontem';
-  return formatDistanceToNow(d, { addSuffix: true, locale: ptBR });
+  if (isYesterday(d)) return 'Yesterday';
+  return formatDistanceToNow(d, { addSuffix: true, locale: enUS });
 };
 
-// --- ITEM INDIVIDUAL DE CONVERSA ---
+// --- CONVERSATION ITEM (Translated) ---
 const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
   const { patient_name, patient_phone, created_at, last_message } = conversation;
   const [isEditing, setIsEditing] = useState(false);
@@ -47,10 +44,10 @@ const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
         .update({ name: nameValue.trim() })
         .eq('phone', patient_phone);
       if (error) throw error;
-      console.log(`Nome do contato ${patient_phone} atualizado para: ${nameValue.trim()}`);
+      console.log(`Contact name ${patient_phone} updated to: ${nameValue.trim()}`);
       setIsEditing(false);
     } catch (error) {
-      console.error('Erro ao atualizar o nome do paciente:', error.message);
+      console.error('Error updating patient name:', error.message);
     }
   };
 
@@ -75,7 +72,7 @@ const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
                 autoFocus
               />
               <button className="save-name-button" onClick={handleSaveName}>
-                Salvar
+                Save
               </button>
             </div>
           ) : (
@@ -94,9 +91,8 @@ const ConversationItem = React.memo(({ conversation, isSelected, onClick }) => {
   );
 });
 
-// --- LISTA PRINCIPAL ---
+// --- MAIN LIST COMPONENT (Updated with robust real-time listeners) ---
 const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone }) => {
-  const { session } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
@@ -104,6 +100,8 @@ const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+  // ### START OF NECESSARY CHANGES ###
+  // This useEffect now contains the robust real-time logic
   useEffect(() => {
     if (!clinicId) {
       setLoading(false);
@@ -112,16 +110,13 @@ const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone
 
     const fetchConversations = async () => {
       try {
-        // 🔹 Busca as últimas mensagens por paciente via RPC otimizada
         const { data, error } = await supabase.rpc('get_latest_messages_per_patient', {
           target_clinic_id: clinicId,
         });
-
         if (error) throw error;
         setConversations(data || []);
       } catch (error) {
-        console.error('❌ Erro ao buscar conversas:', error.message);
-        setConversations([]);
+        console.error('❌ Error fetching conversations:', error.message);
       } finally {
         setLoading(false);
       }
@@ -130,28 +125,33 @@ const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone
     setLoading(true);
     fetchConversations();
 
-    // --- Atualizações em tempo real ---
+    // Consolidated callback for real-time events
+    const handleRealtimeUpdate = (payload) => {
+      console.log('Real-time change detected, refetching conversations:', payload);
+      fetchConversations();
+    };
+
+    // Channel for NEW MESSAGES for the current clinic
     const messagesChannel = supabase
       .channel('public:messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-        fetchConversations();
-      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `clinic_id=eq.${clinicId}` }, handleRealtimeUpdate)
       .subscribe();
 
+    // Channel for NEW PATIENTS and STATUS UPDATES for the current clinic
     const patientsChannel = supabase
       .channel('public:patients')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'patients' }, () => {
-        fetchConversations();
-      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'patients', filter: `clinic_id=eq.${clinicId}` }, handleRealtimeUpdate)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'patients', filter: `clinic_id=eq.${clinicId}` }, handleRealtimeUpdate)
       .subscribe();
 
+    // Cleanup function to remove both channels
     return () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(patientsChannel);
     };
-  }, [clinicId, session?.access_token]);
+  }, [clinicId]);
+  // ### END OF NECESSARY CHANGES ###
 
-  // --- FILTROS E BUSCA ---
   const filteredConversations = useMemo(() => {
     return (conversations || [])
       .filter((c) => {
@@ -185,7 +185,7 @@ const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone
         <h2>Conversations</h2>
         <input
           type="text"
-          placeholder="Buscar por nome ou telefone..."
+          placeholder="Search by name or phone..."
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -196,25 +196,25 @@ const ConversationList = ({ clinicId, onSelectConversation, selectedPatientPhone
             onChange={(e) => setFilterStatus(e.target.value)}
             className="status-filter"
           >
-            <option value="all">Todos os Status</option>
+            <option value="all">All Statuses</option>
             <option value="lead">🟡 Leads ({getStatusCount('lead')})</option>
-            <option value="agendado">✅ Agendados ({getStatusCount('agendado')})</option>
-            <option value="perdido">❌ Perdidos ({getStatusCount('perdido')})</option>
-            <option value="paciente">🩺 Pacientes ({getStatusCount('paciente')})</option>
+            <option value="agendado">✅ Scheduled ({getStatusCount('agendado')})</option>
+            <option value="perdido">❌ Lost ({getStatusCount('perdido')})</option>
+            <option value="paciente">🩺 Patients ({getStatusCount('paciente')})</option>
           </select>
           <select
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
             className="status-filter"
           >
-            <option value="all">Todas as Datas</option>
-            <option value="7d">Últimos 7 dias</option>
+            <option value="all">All Dates</option>
+            <option value="7d">Last 7 days</option>
           </select>
         </div>
       </div>
       <div ref={parentRef} className="list-body">
         {loading ? (
-          <div className="list-loading">Carregando...</div>
+          <div className="list-loading">Loading...</div>
         ) : (
           <div
             style={{
