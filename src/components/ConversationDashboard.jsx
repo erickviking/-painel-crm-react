@@ -18,10 +18,9 @@ const ConversationDashboard = () => {
         setLoading(false);
         return;
       }
-      // NOTA: Você mencionou uma tabela 'profiles' em seu App.jsx original.
-      // Se a tabela for 'clinics', ajuste o .from() abaixo.
+
       const { data, error } = await supabase
-        .from('clinics') // Assumindo que o ID do usuário é o ID da clínica
+        .from('clinics') // A tabela correta é 'clinics'
         .select('id')
         .eq('id', user.id)
         .single();
@@ -29,8 +28,8 @@ const ConversationDashboard = () => {
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching clinic profile:', error);
       }
-      
-      setClinicId(data?.id || user.id); // Fallback para user.id se a busca falhar
+
+      setClinicId(data?.id || user.id); // O ID da clínica é o mesmo do usuário logado
       setLoading(false);
     };
 
