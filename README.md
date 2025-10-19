@@ -10,3 +10,29 @@ Currently, two official plugins are available:
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Running the project locally
+
+1. Create a file named `.env.local` in the project root with the following environment variables:
+
+   ```
+   VITE_SUPABASE_URL=<your supabase url>
+   VITE_SUPABASE_ANON_KEY=<your supabase anon key>
+   VITE_BACKEND_API_URL=<backend api url>
+   ```
+
+   The `.env.local` file is ignored by Git (see `*.local` in `.gitignore`) and will be automatically loaded by Vite during development.
+
+2. Install dependencies (if not already installed):
+
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   The application will be available at the address printed in your terminal.
