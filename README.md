@@ -1,12 +1,25 @@
-# React + Vite
+# Painel CRM React
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a small CRM panel built with [React](https://react.dev/) and [Vite](https://vitejs.dev/). It connects to Supabase to fetch and broadcast chat messages and interacts with a backend API for clinic configuration.
 
-Currently, two official plugins are available:
+## Required environment variables
+Create a `.env.local` file in the project root with the following entries:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
+VITE_BACKEND_API_URL=<backend-base-url>
+```
 
-## Expanding the ESLint configuration
+## Development
+Install dependencies and start the development server:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+Open the printed local URL in your browser to see the application running.
+
+## Deployment
+The app expects a backend that exposes endpoints used by `Settings.jsx` and broadcasts chat messages via Supabase. For details about the backend implementation see the corresponding backend repository or deployment documentation.
