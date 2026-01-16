@@ -1,12 +1,43 @@
 # React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project uses Vite with React. The default configuration provides hot module reloading and a basic ESLint setup.
 
-Currently, two official plugins are available:
+## Development setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Copy `.env.example` to `.env.local` and set the values for the environment variables.
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Expanding the ESLint configuration
+## Environment variables
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The application expects the following variables. See `.env.example` for the template:
+
+- `VITE_SUPABASE_URL` – URL of your Supabase instance.
+- `VITE_SUPABASE_ANON_KEY` – Supabase anon API key.
+- `VITE_BACKEND_API_URL` – Base URL of the backend API used by the settings page.
+
+Create a `.env.local` file based on the example before running the project.
+
+## Build
+
+To generate a production build run:
+
+```bash
+npm run build
+```
+
+## Lint
+
+To run ESLint checks locally execute:
+
+```bash
+npm run lint
+```
+
+
